@@ -21,9 +21,28 @@ async function run() {
     // Database Collections
     const productsCollection = client.db("Ecommerce").collection("products");
 
+    // app.get("/products", async (req, res) => {
+    //     console.log("query", req.query);
+    //   const query = {};
+    //   const cursor = productsCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
+
     app.get("/products", async (req, res) => {
+      // console.log("query", req.query);
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
       const query = {};
-      const result = await productsCollection.find(query).toArray();
+      const cursor = productsCollection.find(query);
+      let result;
+      if(page || size){
+        const result = await cursor.skip(page*size).limit(size).toArray();
+        console.log(result);
+      }else{
+        const result = await cursor.toArray();
+        console.log(result);
+      }
       res.send(result);
     });
 
@@ -31,7 +50,7 @@ async function run() {
     app.get('/productCount', async (req, res)=>{
       const query = {};
       const cursor = productsCollection.find(query)
-      const count = await cursor.count();
+      const count = await productsCollection.estimatedDocumentCount();
       res.send({count})
     })
 
